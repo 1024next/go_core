@@ -32,9 +32,8 @@ func GetRoomPlayers(c *gin.Context) {
 
 	// 解析 Players 字段，获取玩家列表
 	var players []string
-	if err := json.Unmarshal([]byte(room.Players), &players); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "解析玩家列表失败"})
-		return
+	if room.Players == "" {
+		players = []string{} // 初始化为空切片
 	}
 
 	// 返回玩家列表
@@ -79,7 +78,6 @@ func GetRooms(c *gin.Context) {
 
 // 创建房间
 func CreateRoom(c *gin.Context) {
-	fmt.Print(c, 999)
 	gameID := c.Param("game_id")
 
 	// 验证游戏是否存在
@@ -104,7 +102,30 @@ func CreateRoom(c *gin.Context) {
 		return
 	}
 
+	// 更新游戏的房间数量
+	if err := updateGameRoomCount(validatedGameID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "更新游戏房间数量失败"})
+		return
+	}
+
 	c.JSON(http.StatusCreated, room)
+}
+
+// 更新游戏的房间数量
+func updateGameRoomCount(gameID uint) error {
+	var game models.Game
+	// 获取游戏并更新房间数量
+	if err := config.DB.First(&game, gameID).Error; err != nil {
+		return fmt.Errorf("游戏不存在: %v", err)
+	}
+
+	// 更新房间数量
+	game.RoomCount++ // 假设数据库中有一个 `RoomCount` 字段
+	if err := config.DB.Save(&game).Error; err != nil {
+		return fmt.Errorf("更新游戏房间数量失败: %v", err)
+	}
+
+	return nil
 }
 
 // 用户加入房间
