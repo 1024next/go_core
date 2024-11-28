@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Client</title>
+</head>
+<body>
+    <h1>WebSocket Client</h1>
+    <button id="sendMessageBtn">Send Message</button>
+
+    <script>
+        // 创建 WebSocket 连接
+        const socket = new WebSocket("ws://localhost:8080/ws");
+
+        // 连接建立时的回调
+        socket.onopen = function() {
+            console.log("WebSocket connection established");
+        };
+
+        // 监听消息
+        socket.onmessage = function(event) {
+            console.log("Received message: ", event.data);
+            alert("Received: " + event.data); // 显示接收到的消息
+        };
+
+        // 监听 WebSocket 错误
+        socket.onerror = function(error) {
+            console.error("WebSocket error: ", error);
+        };
+
+        // 监听连接关闭
+        socket.onclose = function() {
+            console.log("WebSocket connection closed");
+        };
+
+        // 点击按钮发送消息
+        document.getElementById("sendMessageBtn").onclick = function() {
+            const message = "Hello from the client!";
+            console.log("Sending message: ", message);
+            socket.send(message);
+        };
+    </script>
+</body>
+</html>
